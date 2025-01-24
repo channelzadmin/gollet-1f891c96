@@ -1,22 +1,22 @@
 import { ImageCard } from "@/components/ImageCard";
 import { BottomNav } from "@/components/BottomNav";
+import { useEffect, useState } from "react";
+
+interface Post {
+  id: number;
+  src: string;
+  alt: string;
+  caption: string;
+}
 
 const Index = () => {
-  // Mock data - in a real app this would come from an API
-  const posts = [
-    {
-      id: 1,
-      src: "/lovable-uploads/3850c823-e722-40bd-96b7-01e03b233f1e.png",
-      alt: "Person sitting on field",
-      caption: "Perfect day for outdoor activities"
-    },
-    {
-      id: 2,
-      src: "/lovable-uploads/5d571f82-5e3c-4a64-b2e9-1b5b1a5421c7.png",
-      alt: "Colorful flowers",
-      caption: "Beautiful spring flowers in bloom"
-    }
-  ];
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    // Load posts from localStorage
+    const savedPosts = JSON.parse(localStorage.getItem("posts") || "[]");
+    setPosts(savedPosts);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
