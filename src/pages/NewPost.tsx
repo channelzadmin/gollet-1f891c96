@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 const NewPost = () => {
   const [caption, setCaption] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string>("/lovable-uploads/5d571f82-5e3c-4a64-b2e9-1b5b1a5421c7.png");
+  const [selectedImage, setSelectedImage] = useState<string>("/placeholder.svg");
   const navigate = useNavigate();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
