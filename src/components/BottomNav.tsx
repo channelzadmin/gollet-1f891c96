@@ -1,4 +1,4 @@
-import { Home, PlusSquare, User } from "lucide-react";
+import { Home, PlusSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export const BottomNav = () => {
@@ -12,9 +12,6 @@ export const BottomNav = () => {
         </Link>
         <Link to="/new" className={`p-2 ${location.pathname === "/new" ? "text-blue-500" : "text-gray-400"}`}>
           <PlusSquare size={24} />
-        </Link>
-        <Link to="/profile" className={`p-2 ${location.pathname === "/profile" ? "text-blue-500" : "text-gray-400"}`}>
-          <User size={24} />
         </Link>
       </div>
     </div>
