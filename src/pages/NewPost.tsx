@@ -40,6 +40,10 @@ const NewPost = () => {
     navigate("/");
   };
 
+  const triggerImageInput = () => {
+    document.getElementById("imageInput")?.click();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="sticky top-0 bg-white border-b z-10">
@@ -47,7 +51,10 @@ const NewPost = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+        <div 
+          className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+          onClick={triggerImageInput}
+        >
           <img
             src={selectedImage}
             alt="Preview"
@@ -63,7 +70,7 @@ const NewPost = () => {
           id="imageInput"
         />
         <button 
-          onClick={() => document.getElementById("imageInput")?.click()}
+          onClick={triggerImageInput}
           className="text-blue-500 font-medium text-center w-full"
         >
           Change
