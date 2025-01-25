@@ -80,29 +80,43 @@ const NewPost = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div 
-          className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-          onClick={() => document.getElementById('fileInput')?.click()}
-        >
-          {preview ? (
-            file?.type.startsWith('video/') ? (
-              <video
-                src={preview}
-                className="w-full h-full object-cover"
-                controls
-              />
+        <div className="relative">
+          <div 
+            className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+            onClick={() => !preview && document.getElementById('fileInput')?.click()}
+          >
+            {preview ? (
+              <>
+                {file?.type.startsWith('video/') ? (
+                  <video
+                    src={preview}
+                    className="w-full h-full object-cover"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <Button
+                  variant="secondary"
+                  className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm hover:bg-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document.getElementById('fileInput')?.click();
+                  }}
+                >
+                  Change
+                </Button>
+              </>
             ) : (
-              <img
-                src={preview}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-            )
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              Click to upload media
-            </div>
-          )}
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                Click to upload media
+              </div>
+            )}
+          </div>
         </div>
         
         <input
