@@ -4,44 +4,73 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const NewPost = () => {
   const [caption, setCaption] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string>("/placeholder.svg");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
+        setPreview(reader.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(selectedFile);
     }
   };
 
-  const handleShare = () => {
-    // Get existing posts from localStorage or initialize empty array
-    const existingPosts = JSON.parse(localStorage.getItem("posts") || "[]");
-    
-    // Add new post
-    const newPost = {
-      id: Date.now(),
-      src: selectedImage,
-      alt: "User uploaded image",
-      caption: caption
-    };
-    
-    // Save updated posts
-    localStorage.setItem("posts", JSON.stringify([newPost, ...existingPosts]));
-    
-    toast.success("Post shared successfully!");
-    navigate("/");
-  };
+  const handleShare = async () => {
+    if (!file) {
+      toast.error("Please select a file to upload");
+      return;
+    }
 
-  const triggerImageInput = () => {
-    document.getElementById("imageInput")?.click();
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const isVideo = file.type.startsWith('video/');
+      const bucket = isVideo ? 'videos' : 'images';
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+      // Upload file to storage
+      const { error: uploadError, data } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+
+      // Insert into database
+      const table = isVideo ? 'posts_videos' : 'posts_images';
+      const { error: dbError } = await supabase
+        .from(table)
+        .insert({
+          [`${isVideo ? 'video' : 'image'}_url`]: publicUrl,
+          caption,
+          storage_path: filePath,
+          ...(isVideo && { duration: 0 }) // Add duration for videos
+        });
+
+      if (dbError) throw dbError;
+
+      toast.success("Post shared successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error("Failed to upload. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -53,28 +82,36 @@ const NewPost = () => {
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         <div 
           className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-          onClick={triggerImageInput}
+          onClick={() => document.getElementById('fileInput')?.click()}
         >
-          <img
-            src={selectedImage}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
+          {preview ? (
+            file?.type.startsWith('video/') ? (
+              <video
+                src={preview}
+                className="w-full h-full object-cover"
+                controls
+              />
+            ) : (
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            )
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              Click to upload media
+            </div>
+          )}
         </div>
         
         <input
           type="file"
-          accept="image/*"
-          onChange={handleImageChange}
+          accept="image/*,video/*"
+          onChange={handleFileChange}
           className="hidden"
-          id="imageInput"
+          id="fileInput"
         />
-        <button 
-          onClick={triggerImageInput}
-          className="text-blue-500 font-medium text-center w-full"
-        >
-          Change
-        </button>
 
         <Input
           placeholder="Add a caption..."
@@ -86,8 +123,9 @@ const NewPost = () => {
         <Button 
           onClick={handleShare}
           className="w-full bg-blue-500 hover:bg-blue-600"
+          disabled={isUploading}
         >
-          Share
+          {isUploading ? "Uploading..." : "Share"}
         </Button>
       </main>
 
