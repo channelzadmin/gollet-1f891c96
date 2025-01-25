@@ -51,17 +51,14 @@ const NewPost = () => {
         .getPublicUrl(filePath);
 
       // Insert into database
+      const table = isVideo ? 'posts_videos' : 'posts_images';
       const { error: dbError } = await supabase
-        .from(isVideo ? 'posts_videos' : 'posts_images')
-        .insert(isVideo ? {
-          video_url: publicUrl,
+        .from(table)
+        .insert({
+          [`${isVideo ? 'video' : 'image'}_url`]: publicUrl,
           caption,
           storage_path: filePath,
-          duration: 0
-        } : {
-          image_url: publicUrl,
-          caption,
-          storage_path: filePath
+          ...(isVideo && { duration: 0 }) // Add duration for videos
         });
 
       if (dbError) throw dbError;
@@ -83,37 +80,27 @@ const NewPost = () => {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+        <div 
+          className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+          onClick={() => document.getElementById('fileInput')?.click()}
+        >
           {preview ? (
-            <div className="relative w-full h-full">
-              {file?.type.startsWith('video/') ? (
-                <video
-                  src={preview}
-                  className="w-full h-full object-cover"
-                  controls
-                />
-              ) : (
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <Button
-                onClick={() => document.getElementById('fileInput')?.click()}
-                className="absolute bottom-4 right-4 bg-white text-black hover:bg-gray-100"
-                variant="secondary"
-              >
-                Change
-              </Button>
-            </div>
+            file?.type.startsWith('video/') ? (
+              <video
+                src={preview}
+                className="w-full h-full object-cover"
+                controls
+              />
+            ) : (
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            )
           ) : (
-            <div 
-              className="w-full h-full flex flex-col items-center justify-center cursor-pointer"
-              onClick={() => document.getElementById('fileInput')?.click()}
-            >
-              <p className="text-gray-400 mb-2">Click to upload media</p>
-              <Button variant="secondary">Select File</Button>
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              Click to upload media
             </div>
           )}
         </div>
