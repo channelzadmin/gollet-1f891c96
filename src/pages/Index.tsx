@@ -1,6 +1,5 @@
 import { ImageCard } from "@/components/ImageCard";
 import { BottomNav } from "@/components/BottomNav";
-import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -75,14 +74,18 @@ const Index = () => {
               <div>Loading...</div>
             ) : (
               videos?.map((post) => (
-                <div key={post.id} className="aspect-video rounded-lg overflow-hidden bg-black">
-                  <video
-                    src={post.video_url}
-                    controls
-                    className="w-full h-full object-contain"
-                  />
+                <div key={post.id} className="w-full rounded-lg overflow-hidden bg-white shadow-sm">
+                  <div className="aspect-video bg-black">
+                    <video
+                      src={post.video_url}
+                      controls
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                   {post.caption && (
-                    <p className="text-sm text-gray-600 mt-2">{post.caption}</p>
+                    <div className="p-4">
+                      <p className="text-gray-900 text-sm">{post.caption}</p>
+                    </div>
                   )}
                 </div>
               ))

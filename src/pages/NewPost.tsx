@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { X } from "lucide-react";
 
 const NewPost = () => {
   const [caption, setCaption] = useState("");
@@ -23,6 +24,11 @@ const NewPost = () => {
       };
       reader.readAsDataURL(selectedFile);
     }
+  };
+
+  const clearSelectedMedia = () => {
+    setFile(null);
+    setPreview("");
   };
 
   const handleShare = async () => {
@@ -51,15 +57,22 @@ const NewPost = () => {
         .getPublicUrl(filePath);
 
       // Insert into database
-      const table = isVideo ? 'posts_videos' : 'posts_images';
       const { error: dbError } = await supabase
-        .from(table)
-        .insert({
-          [`${isVideo ? 'video' : 'image'}_url`]: publicUrl,
-          caption,
-          storage_path: filePath,
-          ...(isVideo && { duration: 0 }) // Add duration for videos
-        });
+        .from(isVideo ? 'posts_videos' : 'posts_images')
+        .insert(
+          isVideo 
+            ? {
+                video_url: publicUrl,
+                caption,
+                storage_path: filePath,
+                duration: 0
+              }
+            : {
+                image_url: publicUrl,
+                caption,
+                storage_path: filePath
+              }
+        );
 
       if (dbError) throw dbError;
 
@@ -109,6 +122,17 @@ const NewPost = () => {
                   }}
                 >
                   Change
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm hover:bg-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearSelectedMedia();
+                  }}
+                >
+                  <X className="h-4 w-4" />
                 </Button>
               </>
             ) : (
